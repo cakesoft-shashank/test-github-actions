@@ -27,12 +27,14 @@ jobs:
         id: create_release
         run: |
           TAG="v${{ env.VERSION }}"
-          
-          if gh release view "$TAG" --json id --jq '.id' 2>/dev/null; then
-            echo "$TAG already exists."
-          else
+          RELEASE_RESPONSE=$(gh release view "$TAG" --json id --jq '.id' 2>/dev/null || echo "not_found")
+
+          if [[ "$RELEASE_RESPONSE" == "not_found" ]]; then
             echo "Creating draft release $TAG..."
-            gh release create "$TAG" --draft --title "$TAG" --notes "Automated draft release"
+            gh release create "$TAG" --draft --title "Release $TAG" --notes "Automated draft release"
+            sleep 10  # Give GitHub time to process the release
+          else
+            echo "Release $TAG already exists."
           fi
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
