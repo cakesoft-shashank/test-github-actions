@@ -65,8 +65,11 @@ jobs:
       - name: Sign APK with PGP (ASCII & Binary)
         run: |
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          gpg --detach-sign --armor -o "$APK_PATH.asc" "$APK_PATH"  # ASCII (.asc)
-          gpg --detach-sign -o "$APK_PATH.sign" "$APK_PATH"         # Binary (.sign)
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          gpg --batch --yes --pinentry-mode loopback --detach-sign --armor -o "$APK_PATH.asc" "$APK_PATH"
+          gpg --batch --yes --pinentry-mode loopback --detach-sign -o "$APK_PATH.sign" "$APK_PATH"
+        env:
+          GPG_TTY: /dev/null
 
       - name: Upload Signed APK and Signatures to Release
         run: |
