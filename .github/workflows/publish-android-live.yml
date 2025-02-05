@@ -28,7 +28,6 @@ jobs:
         run: |
           TAG="v${{ env.VERSION }}"
           
-          # Check if the release already exists
           if gh release view "$TAG" --json id --jq '.id' 2>/dev/null; then
             echo "Release $TAG already exists."
           else
@@ -36,7 +35,7 @@ jobs:
             gh release create "$TAG" --draft --title "Release $TAG" --notes "Automated draft release"
           fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
 
       - name: Setup JDK for Android Build
         uses: actions/setup-java@v3
