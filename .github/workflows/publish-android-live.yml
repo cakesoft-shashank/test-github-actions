@@ -29,10 +29,10 @@ jobs:
           TAG="v${{ env.VERSION }}"
           
           if gh release view "$TAG" --json id --jq '.id' 2>/dev/null; then
-            echo "Release $TAG already exists."
+            echo "$TAG already exists."
           else
             echo "Creating draft release $TAG..."
-            gh release create "$TAG" --draft --title "Release $TAG" --notes "Automated draft release"
+            gh release create "$TAG" --draft --title "$TAG" --notes "Automated draft release"
           fi
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
