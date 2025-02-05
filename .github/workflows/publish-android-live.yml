@@ -62,21 +62,24 @@ jobs:
         env:
           PGP_PRIVATE_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
 
-      - name: Sign APK with PGP
+      - name: Sign APK with PGP (ASCII & Binary)
         run: |
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          gpg --detach-sign --armor -o "$APK_PATH.asc" "$APK_PATH"
+          gpg --detach-sign --armor -o "$APK_PATH.asc" "$APK_PATH"  # ASCII (.asc)
+          gpg --detach-sign -o "$APK_PATH.sign" "$APK_PATH"         # Binary (.sign)
 
-      - name: Upload Signed APK and Signature to Release
+      - name: Upload Signed APK and Signatures to Release
         run: |
           TAG="v${{ env.VERSION }}"
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
           if [[ -f "$APK_PATH" ]]; then
             gh release upload "$TAG" "$APK_PATH" --clobber
             gh release upload "$TAG" "$APK_PATH.asc" --clobber
+            gh release upload "$TAG" "$APK_PATH.sign" --clobber
           else
             echo "APK not found!"
             exit 1
           fi
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+
