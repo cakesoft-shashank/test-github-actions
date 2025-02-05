@@ -56,12 +56,24 @@ jobs:
           cd android
           ./gradlew assembleRelease
 
-      - name: Upload APK to Draft Release
+      - name: Import PGP Key
+        run: |
+          echo "$PGP_PRIVATE_KEY" | gpg --batch --import
+        env:
+          PGP_PRIVATE_KEY: ${{ secrets.PGP_PRIVATE_KEY }}
+
+      - name: Sign APK with PGP
+        run: |
+          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          gpg --detach-sign --armor -o "$APK_PATH.asc" "$APK_PATH"
+
+      - name: Upload Signed APK and Signature to Release
         run: |
           TAG="v${{ env.VERSION }}"
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
           if [[ -f "$APK_PATH" ]]; then
             gh release upload "$TAG" "$APK_PATH" --clobber
+            gh release upload "$TAG" "$APK_PATH.asc" --clobber
           else
             echo "APK not found!"
             exit 1
